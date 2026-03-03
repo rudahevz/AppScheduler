@@ -1,0 +1,223 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# App Scheduler — Build, Sign, Notarize, and Release
+#
+# Triggers on:
+#   • Push of a version tag:  git tag v1.9.0 && git push origin v1.9.0
+#   • Manual dispatch from the GitHub Actions UI
+#
+# Required GitHub Secrets (Settings → Secrets → Actions):
+#   APPLE_TEAM_ID            — Your 10-char Apple Developer Team ID (e.g. ABC1234XYZ)
+#   DEVELOPER_ID_CERT_BASE64 — Developer ID Application cert exported as .p12,
+#                              then base64 encoded:
+#                              base64 -i cert.p12 | pbcopy
+#   DEVELOPER_ID_CERT_PASSWORD — Password you set when exporting the .p12
+#   NOTARYTOOL_APPLE_ID      — Your Apple ID email (e.g. you@example.com)
+#   NOTARYTOOL_APP_PASSWORD  — App-specific password from appleid.apple.com
+#   NOTARYTOOL_TEAM_ID       — Same as APPLE_TEAM_ID
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Build · Sign · Notarize · Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'          # e.g. v1.9.0
+  workflow_dispatch:       # allow manual trigger from GitHub UI
+
+jobs:
+  build-and-release:
+    name: Build, Sign & Notarize
+    runs-on: macos-14      # Apple Silicon runner — fastest Xcode builds
+
+    env:
+      APP_NAME:        "App Scheduler"
+      SCHEME:          "AppScheduler"
+      BUNDLE_ID:       "com.yourcompany.appscheduler"   # ← change to yours
+      XCODE_PROJECT:   "swift-app/AppScheduler.xcodeproj"
+      ARCHIVE_PATH:    "${{ github.workspace }}/build/AppScheduler.xcarchive"
+      EXPORT_PATH:     "${{ github.workspace }}/build/export"
+      DMG_PATH:        "${{ github.workspace }}/build/AppScheduler.dmg"
+      KEYCHAIN_NAME:   "build.keychain"
+      KEYCHAIN_PASS:   "temp-keychain-password"
+
+    steps:
+
+    # ── 1. Checkout ────────────────────────────────────────────────────────────
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # ── 2. Select Xcode ────────────────────────────────────────────────────────
+    - name: Select Xcode 15
+      run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+
+    # ── 3. Import signing certificate into a temporary keychain ───────────────
+    - name: Import Developer ID certificate
+      env:
+        CERT_BASE64:  ${{ secrets.DEVELOPER_ID_CERT_BASE64 }}
+        CERT_PASS:    ${{ secrets.DEVELOPER_ID_CERT_PASSWORD }}
+      run: |
+        # Decode cert
+        echo "$CERT_BASE64" | base64 --decode > /tmp/cert.p12
+
+        # Create a fresh temporary keychain
+        security create-keychain  -p "$KEYCHAIN_PASS" "$KEYCHAIN_NAME"
+        security set-keychain-settings -lut 21600 "$KEYCHAIN_NAME"
+        security unlock-keychain  -p "$KEYCHAIN_PASS" "$KEYCHAIN_NAME"
+
+        # Import the Developer ID cert
+        security import /tmp/cert.p12 \
+          -k "$KEYCHAIN_NAME" \
+          -P "$CERT_PASS" \
+          -T /usr/bin/codesign \
+          -T /usr/bin/productsign
+        security set-key-partition-list \
+          -S apple-tool:,apple:,codesign: \
+          -s -k "$KEYCHAIN_PASS" "$KEYCHAIN_NAME"
+
+        # Make this keychain searchable
+        security list-keychains -d user \
+          -s "$KEYCHAIN_NAME" $(security list-keychains -d user | tr -d '"')
+
+        rm /tmp/cert.p12
+
+    # ── 4. Archive ────────────────────────────────────────────────────────────
+    - name: Archive (Release)
+      run: |
+        mkdir -p build
+        xcodebuild archive \
+          -project "$XCODE_PROJECT" \
+          -scheme   "$SCHEME" \
+          -configuration Release \
+          -archivePath "$ARCHIVE_PATH" \
+          CODE_SIGN_STYLE=Manual \
+          CODE_SIGN_IDENTITY="Developer ID Application" \
+          DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
+          PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_ID" \
+          ENABLE_HARDENED_RUNTIME=YES \
+          OTHER_CODE_SIGN_FLAGS="--timestamp --options=runtime" \
+          | xcpretty --color || true
+
+    # ── 5. Export (Developer ID, outside Mac App Store) ───────────────────────
+    - name: Export archive
+      run: |
+        cat > /tmp/ExportOptions.plist << PLIST
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>method</key>
+            <string>developer-id</string>
+            <key>teamID</key>
+            <string>${{ secrets.APPLE_TEAM_ID }}</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>stripSwiftSymbols</key>
+            <true/>
+        </dict>
+        </plist>
+        PLIST
+
+        xcodebuild -exportArchive \
+          -archivePath  "$ARCHIVE_PATH" \
+          -exportPath   "$EXPORT_PATH" \
+          -exportOptionsPlist /tmp/ExportOptions.plist
+
+    # ── 6. Notarize ───────────────────────────────────────────────────────────
+    - name: Notarize app
+      env:
+        APPLE_ID:   ${{ secrets.NOTARYTOOL_APPLE_ID }}
+        APP_PASS:   ${{ secrets.NOTARYTOOL_APP_PASSWORD }}
+        TEAM_ID:    ${{ secrets.NOTARYTOOL_TEAM_ID }}
+      run: |
+        APP_PATH="$EXPORT_PATH/$APP_NAME.app"
+
+        # Zip the .app for submission
+        ditto -c -k --keepParent "$APP_PATH" /tmp/AppScheduler-notarize.zip
+
+        # Submit and wait (notarytool blocks until Apple responds)
+        xcrun notarytool submit /tmp/AppScheduler-notarize.zip \
+          --apple-id   "$APPLE_ID" \
+          --password   "$APP_PASS" \
+          --team-id    "$TEAM_ID" \
+          --wait \
+          --timeout 30m
+
+        # Staple the ticket to the .app so it works offline
+        xcrun stapler staple "$APP_PATH"
+
+    # ── 7. Package into a DMG ─────────────────────────────────────────────────
+    - name: Create DMG
+      run: |
+        APP_PATH="$EXPORT_PATH/$APP_NAME.app"
+
+        # Install create-dmg
+        brew install create-dmg
+
+        create-dmg \
+          --volname      "$APP_NAME" \
+          --volicon      "swift-app/AppScheduler/Assets.xcassets/AppIcon.appiconset/icon_512x512.png" \
+          --window-size  540 380 \
+          --icon-size    128 \
+          --icon         "$APP_NAME.app" 140 190 \
+          --app-drop-link 400 190 \
+          --hide-extension "$APP_NAME.app" \
+          --background   "swift-app/Installer/dmg-background.png" \
+          "$DMG_PATH" \
+          "$APP_PATH"
+
+        # Sign the DMG itself
+        codesign --sign "Developer ID Application" \
+          --timestamp \
+          "$DMG_PATH"
+
+    # ── 8. Notarize the DMG ───────────────────────────────────────────────────
+    - name: Notarize DMG
+      env:
+        APPLE_ID:  ${{ secrets.NOTARYTOOL_APPLE_ID }}
+        APP_PASS:  ${{ secrets.NOTARYTOOL_APP_PASSWORD }}
+        TEAM_ID:   ${{ secrets.NOTARYTOOL_TEAM_ID }}
+      run: |
+        xcrun notarytool submit "$DMG_PATH" \
+          --apple-id  "$APPLE_ID" \
+          --password  "$APP_PASS" \
+          --team-id   "$TEAM_ID" \
+          --wait \
+          --timeout 30m
+
+        xcrun stapler staple "$DMG_PATH"
+
+    # ── 9. Upload DMG as build artifact ──────────────────────────────────────
+    - name: Upload DMG artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AppScheduler-${{ github.ref_name }}
+        path: ${{ env.DMG_PATH }}
+        retention-days: 90
+
+    # ── 10. Create GitHub Release and attach DMG ──────────────────────────────
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        name: App Scheduler ${{ github.ref_name }}
+        body: |
+          ## App Scheduler ${{ github.ref_name }}
+
+          ### Installation
+          1. Download **AppScheduler.dmg** below
+          2. Open the DMG and drag **App Scheduler** to your Applications folder
+          3. Launch from Applications — it will appear in your menu bar
+
+          ### Requirements
+          - macOS 13.0 (Ventura) or later
+
+          > This app is signed with a Developer ID certificate and notarized by Apple.
+          > You will not see any security warnings on launch.
+        files: ${{ env.DMG_PATH }}
+        draft: false
+        prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
+
+    # ── 11. Clean up keychain ─────────────────────────────────────────────────
+    - name: Clean up keychain
+      if: always()
+      run: security delete-keychain "$KEYCHAIN_NAME" || true

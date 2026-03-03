@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>App Scheduler</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0f11;
+    --surface: #16181c;
+    --surface2: #1e2128;
+    --border: #2a2d35;
+    --accent: #c8f060;
+    --accent2: #60c8f0;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --danger: #f06070;
+    --radius: 16px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    overflow-x: hidden;
+  }
+
+  /* background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(200,240,96,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,240,96,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 480px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+    animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Header */
+  .header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo {
+    width: 40px; height: 40px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .logo svg { width: 20px; height: 20px; }
+
+  .header-text h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    color: var(--text);
+  }
+
+  .header-text p {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+  }
+
+  .status-dot {
+    margin-left: auto;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+
+  .status-dot.active {
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  /* Body */
+  .body { padding: 24px 32px 28px; display: flex; flex-direction: column; gap: 20px; }
+
+  /* Section label */
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  /* App selector */
+  .app-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .app-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-align: center;
+  }
+
+  .app-btn:hover {
+    border-color: rgba(200,240,96,0.3);
+    color: var(--text);
+    transform: translateY(-1px);
+  }
+
+  .app-btn.selected {
+    background: rgba(200,240,96,0.08);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .app-icon { font-size: 22px; line-height: 1; }
+
+  /* Custom app input */
+  .custom-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .input::placeholder { color: var(--muted); }
+  .input:focus { border-color: rgba(96,200,240,0.5); }
+
+  /* Time pickers */
+  .time-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .time-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    transition: border-color 0.2s;
+  }
+
+  .time-block:focus-within { border-color: rgba(200,240,96,0.4); }
+
+  .time-block-label {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .time-block-label span { font-size: 14px; }
+
+  .time-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 300;
+    outline: none;
+    letter-spacing: -1px;
+  }
+
+  .time-input::-webkit-calendar-picker-indicator { filter: invert(0.4); cursor: pointer; }
+
+  /* Interval */
+  .interval-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+
+  .interval-label { font-size: 12px; color: var(--muted); flex: 1; }
+
+  .interval-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .interval-btn {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 16px;
+    display: grid;
+    place-items: center;
+    transition: all 0.15s;
+  }
+
+  .interval-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .interval-value {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 300;
+    min-width: 40px;
+    text-align: center;
+  }
+
+  .interval-unit { font-size: 11px; color: var(--muted); }
+
+  /* Generate button */
+  .generate-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: #0e0f11;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .generate-btn:hover { background: #d8ff70; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(200,240,96,0.3); }
+  .generate-btn:active { transform: translateY(0); }
+
+  /* Output */
+  .output-wrap {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    animation: fadeIn 0.3s ease both;
+  }
+
+  .output-wrap.visible { display: flex; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .output-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .copy-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .copy-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .copy-btn.copied { border-color: var(--accent); color: var(--accent); }
+
+  .code-block {
+    background: #0a0b0d;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 11.5px;
+    line-height: 1.7;
+    overflow-x: auto;
+    white-space: pre;
+    color: #9ba3b0;
+  }
+
+  .code-block .kw { color: var(--accent2); }
+  .code-block .str { color: var(--accent); }
+  .code-block .cm { color: #4a5260; }
+  .code-block .num { color: #f0a060; }
+
+  /* Divider */
+  .divider { height: 1px; background: var(--border); }
+
+  /* Footer */
+  .footer {
+    padding: 16px 32px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-text { font-size: 11px; color: var(--muted); }
+
+  .pill {
+    background: rgba(200,240,96,0.1);
+    border: 1px solid rgba(200,240,96,0.2);
+    color: var(--accent);
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <svg viewBox="0 0 20 20" fill="none" stroke="#0e0f11" stroke-width="2" stroke-linecap="round">
+        <circle cx="10" cy="10" r="7"/>
+        <polyline points="10,6 10,10 13,12"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>App Scheduler</h1>
+      <p>macOS automation tool</p>
+    </div>
+    <div class="status-dot" id="statusDot"></div>
+  </div>
+
+  <!-- Body -->
+  <div class="body">
+
+    <!-- App Selector -->
+    <div>
+      <div class="section-label">Select App</div>
+      <div class="app-grid" id="appGrid">
+        <button class="app-btn" data-app="Safari">
+          <span class="app-icon">🧭</span>Safari
+        </button>
+        <button class="app-btn" data-app="Spotify">
+          <span class="app-icon">🎵</span>Spotify
+        </button>
+        <button class="app-btn" data-app="Slack">
+          <span class="app-icon">💬</span>Slack
+        </button>
+        <button class="app-btn" data-app="Notes">
+          <span class="app-icon">📝</span>Notes
+        </button>
+        <button class="app-btn" data-app="Mail">
+          <span class="app-icon">✉️</span>Mail
+        </button>
+        <button class="app-btn" data-app="Calendar">
+          <span class="app-icon">📅</span>Calendar
+        </button>
+        <button class="app-btn" data-app="Terminal">
+          <span class="app-icon">⌨️</span>Terminal
+        </button>
+        <button class="app-btn" data-app="custom">
+          <span class="app-icon">＋</span>Custom
+        </button>
+      </div>
+      <div class="custom-row" id="customRow" style="display:none; margin-top:10px;">
+        <input class="input" id="customAppInput" type="text" placeholder="App name (e.g. Figma)" />
+      </div>
+    </div>
+
+    <!-- Time Pickers -->
+    <div>
+      <div class="section-label">Schedule</div>
+      <div class="time-row">
+        <div class="time-block">
+          <div class="time-block-label"><span>🟢</span> Open at</div>
+          <input class="time-input" id="openTime" type="time" value="09:00" />
+        </div>
+        <div class="time-block">
+          <div class="time-block-label"><span>🔴</span> Close at</div>
+          <input class="time-input" id="closeTime" type="time" value="17:00" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Check Interval -->
+    <div>
+      <div class="section-label">Check Interval</div>
+      <div class="interval-row">
+        <span class="interval-label">How often to check the time</span>
+        <div class="interval-control">
+          <button class="interval-btn" id="decreaseBtn">−</button>
+          <span class="interval-value" id="intervalVal">30</span>
+          <button class="interval-btn" id="increaseBtn">+</button>
+          <span class="interval-unit">sec</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generate -->
+    <button class="generate-btn" id="generateBtn">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <polyline points="4,8 8,4 12,8"/><line x1="8" y1="4" x2="8" y2="13"/>
+      </svg>
+      Generate Python Script
+    </button>
+
+    <!-- Output -->
+    <div class="output-wrap" id="outputWrap">
+      <div class="output-header">
+        <div class="section-label" style="margin:0">Generated Script</div>
+        <button class="copy-btn" id="copyBtn">Copy</button>
+      </div>
+      <div class="code-block" id="codeOutput"></div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span class="footer-text">Run with <code>python3 app_scheduler.py</code></span>
+    <span class="pill">macOS only</span>
+  </div>
+</div>
+
+<script>
+  // State
+  let selectedApp = null;
+  let interval = 30;
+
+  // App selection
+  document.getElementById('appGrid').addEventListener('click', e => {
+    const btn = e.target.closest('.app-btn');
+    if (!btn) return;
+    document.querySelectorAll('.app-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedApp = btn.dataset.app;
+
+    const customRow = document.getElementById('customRow');
+    if (selectedApp === 'custom') {
+      customRow.style.display = 'flex';
+      document.getElementById('customAppInput').focus();
+    } else {
+      customRow.style.display = 'none';
+    }
+
+    document.getElementById('statusDot').classList.add('active');
+  });
+
+  // Interval controls
+  document.getElementById('decreaseBtn').addEventListener('click', () => {
+    if (interval > 5) { interval -= 5; document.getElementById('intervalVal').textContent = interval; }
+  });
+  document.getElementById('increaseBtn').addEventListener('click', () => {
+    if (interval < 300) { interval += 5; document.getElementById('intervalVal').textContent = interval; }
+  });
+
+  // Generate
+  document.getElementById('generateBtn').addEventListener('click', () => {
+    let appName = selectedApp;
+    if (!appName) { alert('Please select an app first.'); return; }
+    if (appName === 'custom') {
+      appName = document.getElementById('customAppInput').value.trim();
+      if (!appName) { alert('Please enter a custom app name.'); return; }
+    }
+
+    const openTime  = document.getElementById('openTime').value  || '09:00';
+    const closeTime = document.getElementById('closeTime').value || '17:00';
+
+    const script = generateScript(appName, openTime, closeTime, interval);
+    renderCode(script);
+
+    const wrap = document.getElementById('outputWrap');
+    wrap.classList.add('visible');
+    wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+
+  // Copy
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    const code = document.getElementById('codeOutput').dataset.raw;
+    navigator.clipboard.writeText(code).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  });
+
+  function generateScript(app, open, close, checkInterval) {
+    return `#!/usr/bin/env python3
+"""
+macOS App Scheduler
+Generated by App Scheduler UI
+"""
+
+import subprocess
+import time
+from datetime import datetime
+
+# ── CONFIG ─────────────────────────────────
+APP_NAME        = "${app}"
+OPEN_TIME       = "${open}"
+CLOSE_TIME      = "${close}"
+CHECK_INTERVAL  = ${checkInterval}
+# ───────────────────────────────────────────
+
+
+def parse_time(t):
+    h, m = t.split(":")
+    return int(h), int(m)
+
+def open_app(name):
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Opening '{name}'...")
+    subprocess.run(["open", "-a", name], check=True)
+
+def close_app(name):
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Closing '{name}'...")
+    subprocess.run(["osascript", "-e", f'tell application "{name}" to quit'], check=True)
+
+def is_running(name):
+    r = subprocess.run(
+        ["osascript", "-e", f'tell application "System Events" to (name of processes) contains "{name}"'],
+        capture_output=True, text=True
+    )
+    return r.stdout.strip().lower() == "true"
+
+def main():
+    open_h,  open_m  = parse_time(OPEN_TIME)
+    close_h, close_m = parse_time(CLOSE_TIME)
+    opened = closed = False
+    last_date = None
+
+    print(f"Scheduler running for '{APP_NAME}'")
+    print(f"  Open: {OPEN_TIME}  |  Close: {CLOSE_TIME}")
+    print("Press Ctrl+C to stop.\\n")
+
+    while True:
+        now = datetime.now()
+        today = now.date()
+        if today != last_date:
+            opened = closed = False
+            last_date = today
+
+        if (now.hour, now.minute) >= (open_h, open_m) and not opened:
+            if not is_running(APP_NAME): open_app(APP_NAME)
+            opened = True
+
+        if (now.hour, now.minute) >= (close_h, close_m) and not closed:
+            if is_running(APP_NAME): close_app(APP_NAME)
+            closed = True
+
+        time.sleep(CHECK_INTERVAL)
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\\nScheduler stopped.")`;
+  }
+
+  function renderCode(raw) {
+    const el = document.getElementById('codeOutput');
+    el.dataset.raw = raw;
+
+    // Simple syntax highlighting
+    let html = raw
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      // strings
+      .replace(/(f?"[^"]*")/g, '<span class="str">$1</span>')
+      .replace(/(f?'[^']*')/g, '<span class="str">$1</span>')
+      // keywords
+      .replace(/\b(import|from|def|return|if|while|not|and|or|else|True|False|None|try|except|for|in|print)\b/g, '<span class="kw">$1</span>')
+      // comments
+      .replace(/(#[^\n]*)/g, '<span class="cm">$1</span>')
+      // numbers
+      .replace(/\b(\d+)\b/g, '<span class="num">$1</span>');
+
+    el.innerHTML = html;
+  }
+</script>
+</body>
+</html>

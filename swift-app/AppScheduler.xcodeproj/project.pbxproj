@@ -1,0 +1,231 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A001 /* AppSchedulerApp.swift in Sources */  = {isa = PBXBuildFile; fileRef = B001; };
+		A002 /* AppDelegate.swift in Sources */       = {isa = PBXBuildFile; fileRef = B002; };
+		A003 /* Config.swift in Sources */            = {isa = PBXBuildFile; fileRef = B003; };
+		A004 /* Scheduler.swift in Sources */         = {isa = PBXBuildFile; fileRef = B004; };
+		A005 /* SchedulerView.swift in Sources */     = {isa = PBXBuildFile; fileRef = B005; };
+		A006 /* Shortcuts.swift in Sources */         = {isa = PBXBuildFile; fileRef = B006; };
+		A007 /* LaunchAtLogin.swift in Sources */     = {isa = PBXBuildFile; fileRef = B007; };
+		A008 /* Assets.xcassets in Resources */       = {isa = PBXBuildFile; fileRef = B008; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B001 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift;            path = AppSchedulerApp.swift;        sourceTree = "<group>"; };
+		B002 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift;            path = AppDelegate.swift;            sourceTree = "<group>"; };
+		B003 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift;            path = Config.swift;                 sourceTree = "<group>"; };
+		B004 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift;            path = Scheduler.swift;              sourceTree = "<group>"; };
+		B005 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift;            path = SchedulerView.swift;          sourceTree = "<group>"; };
+		B006 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift;            path = Shortcuts.swift;              sourceTree = "<group>"; };
+		B007 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift;            path = LaunchAtLogin.swift;          sourceTree = "<group>"; };
+		B008 = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog;         path = Assets.xcassets;              sourceTree = "<group>"; };
+		B009 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml;              path = Info.plist;                   sourceTree = "<group>"; };
+		B010 = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements;     path = AppScheduler.entitlements;    sourceTree = "<group>"; };
+		PROD = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "App Scheduler.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FW01 = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		ROOT = {
+			isa = PBXGroup;
+			children = (SRCG, PRDS);
+			sourceTree = "<group>";
+		};
+		PRDS = {
+			isa = PBXGroup;
+			children = (PROD);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		SRCG = {
+			isa = PBXGroup;
+			children = (B001, B002, B003, B004, B005, B006, B007, B008, B009, B010);
+			path = AppScheduler;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		TGT1 = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = XCL1;
+			buildPhases = (SRC1, FW01, RES1);
+			buildRules = ();
+			dependencies = ();
+			name = AppScheduler;
+			productName = AppScheduler;
+			productReference = PROD;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		PROJ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = { TGT1 = { CreatedOnToolsVersion = 15.0; }; };
+			};
+			buildConfigurationList = XCL0;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en, Base);
+			mainGroup = ROOT;
+			productRefGroup = PRDS;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (TGT1);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		RES1 = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (A008);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		SRC1 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (A001, A002, A003, A004, A005, A006, A007);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		C001 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("DEBUG=1", "$(inherited)");
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		C002 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		C003 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				/* ── Debug: local development, ad-hoc signing ── */
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 19;
+				DEVELOPMENT_TEAM = "YOUR_TEAM_ID";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AppScheduler/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks");
+				MARKETING_VERSION = 1.9.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.appscheduler";
+				PRODUCT_NAME = "App Scheduler";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				CODE_SIGN_ENTITLEMENTS = AppScheduler/AppScheduler.entitlements;
+			};
+			name = Debug;
+		};
+		C004 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				/* ── Release: Developer ID, Hardened Runtime, notarization-ready ── */
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Developer ID Application";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 19;
+				DEVELOPMENT_TEAM = "YOUR_TEAM_ID";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AppScheduler/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks");
+				MARKETING_VERSION = 1.9.0;
+				OTHER_CODE_SIGN_FLAGS = "--timestamp --options=runtime";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.appscheduler";
+				PRODUCT_NAME = "App Scheduler";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				CODE_SIGN_ENTITLEMENTS = AppScheduler/AppScheduler.entitlements;
+				/* provisioning profile is set via xcodebuild -allowProvisioningUpdates */
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		XCL0 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (C001, C002);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		XCL1 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (C003, C004);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = PROJ;
+}
