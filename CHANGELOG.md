@@ -244,3 +244,122 @@ Complete visual overhaul to match Apple's macOS Sequoia vibrancy / glass aesthet
 **SchedulerView.swift**
 - Fixed `.padding(.vertical: 2)` and `.padding(.horizontal: 6)` — Swift requires comma syntax not colon: `.padding(.vertical, 2)`
 - Two occurrences in `timeBadge()` inside `EntryRow`
+
+---
+
+### v1.8.0 — macOS HIG Compliance
+
+Full audit and fixes against Apple's Human Interface Guidelines.
+
+**SchedulerView.swift**
+- FIX #1 — Removed all `.preferredColorScheme(.dark)` and `.colorScheme(.dark)` modifiers — app now respects the user's system appearance (Light / Dark / Auto)
+- FIX #2 — Replaced plain `Button("Delete")` in `EntrySheet` with a `.confirmationDialog` showing "Delete Schedule?" with a destructive `Button("Delete", role: .destructive)` and a cancel option — prevents accidental deletion
+- FIX #3 — Added `.accessibilityLabel()` to 22 interactive elements across `EntryRow`, `EntrySheet`, the sidebar tab buttons, countdown banner, and bottom bar controls
+- FIX #4 — Added `.help()` tooltips to 7 icon-only buttons (pause/resume, add, sidebar tabs, start/stop) so their purpose is clear on hover
+- Updated version footer to `v1.8`
+
+**AppDelegate.swift**
+- FIX #1 — Removed `.environment(\.colorScheme, .dark)` from the popover's root view
+
+**Scheduler.swift**
+- FIX #5 — Added `import UserNotifications`
+- Added `notificationsEnabled: Bool` `@Published` property persisted to `UserDefaults`
+- Added `setNotificationsEnabled(_ enabled: Bool)` which requests `UNUserNotificationCenter` authorization when toggling on
+- Added `sendNotification(title:body:)` private helper
+- `openTarget()` and `closeTarget()` now call `sendNotification` after each action
+
+**Info.plist**
+- FIX #6 — Bumped `CFBundleShortVersionString` from `1.0` to `1.8.0`, `CFBundleVersion` to `18`
+- Added `NSUserNotificationUsageDescription` key with usage string
+
+---
+
+### v1.9.0 — Keyboard Shortcuts
+
+Nine keyboard shortcuts added across the app, following standard macOS conventions.
+
+**SchedulerView.swift**
+- `⌘N` — Add new schedule entry (`.keyboardShortcut("n", modifiers: .command)` on the + button)
+- `⌘1` — Switch to Schedules tab (`.keyboardShortcut("1", modifiers: .command)` on sidebar item)
+- `⌘2` — Switch to Settings tab (`.keyboardShortcut("2", modifiers: .command)` on sidebar item)
+- `⌘,` — Open Settings tab (standard macOS preferences shortcut via invisible background button)
+- `Space` — Pause / Resume All (`.keyboardShortcut(.space, modifiers: [])` on bottom bar button)
+- `⌘S` — Save entry in EntrySheet (`.keyboardShortcut("s", modifiers: .command)` on Save button)
+- `⌘⌫` — Delete entry, shows confirmation dialog (`.keyboardShortcut(.delete, modifiers: .command)` on Delete button)
+- Added "Keyboard Shortcuts" reference row to the Settings tab listing all shortcuts
+- Updated version footer to `v1.9`
+
+**AppDelegate.swift**
+- Added `private var keyMonitor: Any?` property for NSEvent monitor lifetime management
+- `⌘W` — Close popover (`NSEvent.addLocalMonitorForEvents(matching: .keyDown)` local monitor, fires only when popover is shown)
+- `Escape` — Close popover (same monitor, keyCode 53)
+- Monitor is removed in `quitApp()` to avoid leaks
+
+---
+
+### v2.0.0 — Customizable Keyboard Shortcuts
+
+Complete keyboard shortcut system rewrite — shortcuts are now user-configurable and persisted across launches.
+
+**Shortcuts.swift** ← new file
+- `ShortcutAction` enum with 7 actions: `addSchedule`, `switchSchedules`, `switchSettings`, `pauseResumeAll`, `saveEntry`, `deleteEntry`, `closePopover` — each with a system SF Symbol icon
+- `RecordedShortcut` struct: `Codable` model storing `keyCode` (UInt16), `modifierFlags` (UInt rawValue), and `displayString` (e.g. `"⌘N"`, `"Space"`, `"⌘⌫"`)
+- `RecordedShortcut.defaults`: default shortcuts matching the v1.9 hardcoded values
+- `ShortcutStore` singleton `ObservableObject`: loads/saves to `UserDefaults` key `"CustomShortcuts_v1"`, merges saved shortcuts with defaults, provides `set()`, `resetToDefaults()`, and `action(for: NSEvent)` matcher
+- `Notification.Name.shortcutFired` for bridging NSEvent → SwiftUI
+- `NSEvent.ModifierFlags.symbols` extension: converts flags to `⌃⌥⇧⌘` symbols
+- `shortcutDisplayString(for: NSEvent)` helper: builds human-readable strings, handles special keys (Space, Return, Delete, Escape, arrows, Home, End)
+
+**AppDelegate.swift**
+- Removed hardcoded `keyCode` checks (13, 53)
+- NSEvent monitor now calls `ShortcutStore.shared.action(for: event)` to match events dynamically
+- `.closePopover` handled directly in the monitor; all other actions posted via `NotificationCenter` with `.shortcutFired` and action rawValue in `userInfo`
+
+**SchedulerView.swift**
+- Removed all `.keyboardShortcut()` SwiftUI modifiers (now centralized in the NSEvent monitor)
+- Removed invisible `⌘,` background button
+- Added `.onReceive(NotificationCenter.default.publisher(for: .shortcutFired))` to dispatch actions: `addSchedule`, `switchSchedules`, `switchSettings`, `pauseResumeAll`
+- `saveEntry` and `deleteEntry` handled in `EntrySheet` via its own `.onReceive`
+- Replaced static "Keyboard Shortcuts" Settings row with a tappable `→` navigation row
+- Removed "Quit App" row from Settings (right-click on menu bar icon remains the correct pattern)
+- Added `ShortcutsNavigationView` wrapper with slide-in animation (`.easeInOut(duration: 0.22)`)
+
+**ShortcutsEditorView** (inside SchedulerView.swift)
+- Header: ← Back button, "Shortcuts" title, Reset button with confirmation dialog
+- Scrollable list of all 7 actions with icon, name, and tappable shortcut badge
+- Badge states: normal (shows current shortcut), recording (pulsing dot + "recording…"), none ("none" in dim text)
+- Tap any badge → starts recording mode via `NSEvent.addLocalMonitorForEvents`
+- Recording requires at least one modifier key (⌘⌥⌃⇧); bare Space is the only allowed unmodified key
+- Escape (keyCode 53) cancels recording without saving
+- Valid combo → builds `RecordedShortcut` → calls `ShortcutStore.shared.set()` → stops recording
+- `@State private var pulsing` drives the recording indicator animation
+- Full `.accessibilityLabel()` on all rows describing current shortcut state and recording mode
+
+**Info.plist**
+- `CFBundleShortVersionString` bumped to `2.0.0`, `CFBundleVersion` to `20`
+
+---
+
+### Distribution Setup
+
+Added signing, notarization, and automated release infrastructure (not a Swift code change).
+
+**AppScheduler.entitlements** ← new file
+- Hardened Runtime enabled (`com.apple.security.cs.*` keys)
+- `com.apple.security.automation.apple-events = true` for open/close scheduling
+- No App Sandbox (incompatible with core features: arbitrary app launching and process termination)
+
+**project.pbxproj**
+- Release build config: `CODE_SIGN_STYLE = Manual`, `CODE_SIGN_IDENTITY = "Developer ID Application"`, `ENABLE_HARDENED_RUNTIME = YES`, `OTHER_CODE_SIGN_FLAGS = "--timestamp --options=runtime"`
+- `CODE_SIGN_ENTITLEMENTS` wired to `AppScheduler/AppScheduler.entitlements` in both Debug and Release
+- `PRODUCT_BUNDLE_IDENTIFIER` set to `com.rudakirsch.appscheduler`
+- Fixed UUID collision bug: `B006` previously assigned to both `Shortcuts.swift` and `Assets.xcassets` — now unique IDs throughout
+
+**.github/workflows/release.yml** ← new file
+- Triggers on version tag push (`v*.*.*`) or manual dispatch
+- Runs on `macos-15` runner (avoids `xcodebuild -exportArchive` segfault present on macos-14/Xcode 15)
+- Steps: checkout → import Developer ID cert into temp keychain → `xcodebuild archive` → copy `.app` from archive + re-sign with `codesign` → `xcrun notarytool submit --wait` → `xcrun stapler staple` → `create-dmg` → sign + notarize DMG → upload artifact → create GitHub Release
+
+**scripts/build-release.sh** ← new file
+- Same pipeline as CI but runs locally on your Mac
+- Reads `TEAM_ID`, `BUNDLE_ID`, `APPLE_ID`, `APP_PASSWORD` from environment variables
