@@ -1,0 +1,26 @@
+# Xcode
+*.xcuserstate
+xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+build/
+
+# Python
+*.pyc
+__pycache__/
+dist/
+*.spec
+*.egg-info/
+venv/
+.env
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
