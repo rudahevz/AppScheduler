@@ -1,0 +1,199 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# App Scheduler — Build · Sign · Notarize · Release
+#
+# Triggers on:
+#   • Push of a version tag:  git push origin v3.0.0
+#   • Manual dispatch from the GitHub Actions UI
+#
+# Required GitHub Secrets (Settings → Secrets → Actions):
+#   APPLE_TEAM_ID              — Your 10-char Apple Developer Team ID
+#   DEVELOPER_ID_CERT_BASE64   — Developer ID cert exported as .p12, base64 encoded
+#   DEVELOPER_ID_CERT_PASSWORD — Password set when exporting the .p12
+#   NOTARYTOOL_APPLE_ID        — Your Apple ID email
+#   NOTARYTOOL_APP_PASSWORD    — App-specific password from appleid.apple.com
+#   NOTARYTOOL_TEAM_ID         — Same as APPLE_TEAM_ID
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Build · Sign · Notarize · Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    name: Build, Sign & Notarize
+    runs-on: macos-14
+
+    env:
+      APP_NAME:      "App Scheduler"
+      SCHEME:        "AppScheduler"
+      BUNDLE_ID:     "com.rudakirsch.appscheduler"
+      XCODE_PROJECT: "AppScheduler.xcodeproj"
+      ARCHIVE_PATH:  "${{ github.workspace }}/build/AppScheduler.xcarchive"
+      EXPORT_PATH:   "${{ github.workspace }}/build/export"
+      DMG_PATH:      "${{ github.workspace }}/build/AppScheduler.dmg"
+      KEYCHAIN_NAME: "build.keychain"
+      KEYCHAIN_PASS: "temp-keychain-password"
+
+    steps:
+
+    # ── 1. Checkout ────────────────────────────────────────────────────────────
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # ── 2. Select Xcode ────────────────────────────────────────────────────────
+    - name: Select Xcode 15
+      run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+
+    # ── 3. Import signing certificate ─────────────────────────────────────────
+    - name: Import Developer ID certificate
+      env:
+        CERT_BASE64: ${{ secrets.DEVELOPER_ID_CERT_BASE64 }}
+        CERT_PASS:   ${{ secrets.DEVELOPER_ID_CERT_PASSWORD }}
+      run: |
+        echo "$CERT_BASE64" | base64 --decode > /tmp/cert.p12
+        security create-keychain  -p "$KEYCHAIN_PASS" "$KEYCHAIN_NAME"
+        security set-keychain-settings -lut 21600 "$KEYCHAIN_NAME"
+        security unlock-keychain  -p "$KEYCHAIN_PASS" "$KEYCHAIN_NAME"
+        security import /tmp/cert.p12 \
+          -k "$KEYCHAIN_NAME" \
+          -P "$CERT_PASS" \
+          -T /usr/bin/codesign \
+          -T /usr/bin/productsign
+        security set-key-partition-list \
+          -S apple-tool:,apple:,codesign: \
+          -s -k "$KEYCHAIN_PASS" "$KEYCHAIN_NAME"
+        security list-keychains -d user \
+          -s "$KEYCHAIN_NAME" $(security list-keychains -d user | tr -d '"')
+        rm /tmp/cert.p12
+
+    # ── 4. Archive ────────────────────────────────────────────────────────────
+    - name: Archive (Release)
+      run: |
+        mkdir -p build
+        xcodebuild archive \
+          -project "$XCODE_PROJECT" \
+          -scheme   "$SCHEME" \
+          -configuration Release \
+          -archivePath "$ARCHIVE_PATH" \
+          CODE_SIGN_STYLE=Manual \
+          CODE_SIGN_IDENTITY="Developer ID Application" \
+          DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
+          PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_ID" \
+          ENABLE_HARDENED_RUNTIME=YES \
+          OTHER_CODE_SIGN_FLAGS="--timestamp --options=runtime" \
+          | xcpretty --color || true
+
+    # ── 5. Export ─────────────────────────────────────────────────────────────
+    - name: Export archive
+      run: |
+        cat > /tmp/ExportOptions.plist << PLIST
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>method</key>
+            <string>developer-id</string>
+            <key>teamID</key>
+            <string>${{ secrets.APPLE_TEAM_ID }}</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>stripSwiftSymbols</key>
+            <true/>
+        </dict>
+        </plist>
+        PLIST
+        xcodebuild -exportArchive \
+          -archivePath "$ARCHIVE_PATH" \
+          -exportPath  "$EXPORT_PATH" \
+          -exportOptionsPlist /tmp/ExportOptions.plist
+
+    # ── 6. Notarize .app ─────────────────────────────────────────────────────
+    - name: Notarize app
+      env:
+        APPLE_ID: ${{ secrets.NOTARYTOOL_APPLE_ID }}
+        APP_PASS: ${{ secrets.NOTARYTOOL_APP_PASSWORD }}
+        TEAM_ID:  ${{ secrets.NOTARYTOOL_TEAM_ID }}
+      run: |
+        APP_PATH="$EXPORT_PATH/$APP_NAME.app"
+        ditto -c -k --keepParent "$APP_PATH" /tmp/AppScheduler-notarize.zip
+        xcrun notarytool submit /tmp/AppScheduler-notarize.zip \
+          --apple-id "$APPLE_ID" \
+          --password "$APP_PASS" \
+          --team-id  "$TEAM_ID" \
+          --wait \
+          --timeout 30m
+        xcrun stapler staple "$APP_PATH"
+
+    # ── 7. Create DMG ────────────────────────────────────────────────────────
+    - name: Create DMG
+      run: |
+        APP_PATH="$EXPORT_PATH/$APP_NAME.app"
+        brew install create-dmg
+        create-dmg \
+          --volname      "$APP_NAME" \
+          --volicon      "AppScheduler/Assets.xcassets/AppIcon.appiconset/icon_512x512.png" \
+          --window-size  540 380 \
+          --icon-size    128 \
+          --icon         "$APP_NAME.app" 140 190 \
+          --app-drop-link 400 190 \
+          --hide-extension "$APP_NAME.app" \
+          --background   "Installer/dmg-background.png" \
+          "$DMG_PATH" \
+          "$APP_PATH"
+        codesign --sign "Developer ID Application" \
+          --timestamp \
+          "$DMG_PATH"
+
+    # ── 8. Notarize DMG ──────────────────────────────────────────────────────
+    - name: Notarize DMG
+      env:
+        APPLE_ID: ${{ secrets.NOTARYTOOL_APPLE_ID }}
+        APP_PASS: ${{ secrets.NOTARYTOOL_APP_PASSWORD }}
+        TEAM_ID:  ${{ secrets.NOTARYTOOL_TEAM_ID }}
+      run: |
+        xcrun notarytool submit "$DMG_PATH" \
+          --apple-id "$APPLE_ID" \
+          --password "$APP_PASS" \
+          --team-id  "$TEAM_ID" \
+          --wait \
+          --timeout 30m
+        xcrun stapler staple "$DMG_PATH"
+
+    # ── 9. Upload artifact ───────────────────────────────────────────────────
+    - name: Upload DMG artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AppScheduler-${{ github.ref_name }}
+        path: ${{ env.DMG_PATH }}
+        retention-days: 90
+
+    # ── 10. Create GitHub Release ────────────────────────────────────────────
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        name: App Scheduler ${{ github.ref_name }}
+        body: |
+          ## App Scheduler ${{ github.ref_name }}
+
+          ### Installation
+          1. Download **AppScheduler.dmg** below
+          2. Open the DMG and drag **App Scheduler** to your Applications folder
+          3. Launch from Applications — it will appear in your menu bar
+
+          ### Requirements
+          - macOS 13.0 (Ventura) or later
+
+          > Signed with Developer ID and notarized by Apple. No security warnings on launch.
+        files: ${{ env.DMG_PATH }}
+        draft: false
+        prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
+
+    # ── 11. Clean up keychain ────────────────────────────────────────────────
+    - name: Clean up keychain
+      if: always()
+      run: security delete-keychain "$KEYCHAIN_NAME" || true
