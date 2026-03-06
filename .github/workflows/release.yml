@@ -45,8 +45,8 @@ jobs:
       uses: actions/checkout@v4
 
     # ── 2. Select Xcode ────────────────────────────────────────────────────────
-    - name: Select Xcode 15
-      run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+    - name: Select Xcode 16
+      run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
 
     # ── 3. Import signing certificate ─────────────────────────────────────────
     - name: Import Developer ID certificate
