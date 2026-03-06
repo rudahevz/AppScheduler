@@ -117,10 +117,11 @@ class Jiggler: ObservableObject {
     }
 
     private func cancelAll() {
-        subtleTimer?.invalidate();    subtleTimer    = nil
+        subtleTimer?.invalidate();     subtleTimer     = nil
         humanPauseTimer?.invalidate(); humanPauseTimer = nil
         humanMoveTimer?.invalidate();  humanMoveTimer  = nil
         userStoppedTimer?.invalidate(); userStoppedTimer = nil
+        // animateStep recursion stops automatically because isActive becomes false
     }
 
     private func scheduleWork() {
@@ -137,7 +138,8 @@ class Jiggler: ObservableObject {
 
     private func scheduleSubtle() {
         subtleTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.performSubtleJiggle() }
+            guard let self else { return }
+            Task { @MainActor [weak self] in self?.performSubtleJiggle() }
         }
     }
 
@@ -215,7 +217,8 @@ class Jiggler: ObservableObject {
     private func scheduleHumanMove(delay: Double) {
         humanPauseTimer?.invalidate()
         humanPauseTimer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { [weak self] _ in
-            Task { @MainActor in self?.beginHumanMove() }
+            guard let self else { return }
+            Task { @MainActor [weak self] in self?.beginHumanMove() }
         }
     }
 
@@ -226,7 +229,6 @@ class Jiggler: ObservableObject {
         let mouse  = NSEvent.mouseLocation
         let start  = CGPoint(x: mouse.x, y: screen.height - mouse.y)
 
-        // Larger, freer movement range
         let margin: CGFloat = 60
         let range:  CGFloat = CGFloat.random(in: 150...700)
         let angle           = CGFloat.random(in: 0...(2 * .pi))
@@ -235,7 +237,6 @@ class Jiggler: ObservableObject {
             y: (start.y + sin(angle) * range).clamped(to: margin...(screen.height - margin))
         )
 
-        // Bézier control point — natural arc
         let mid = CGPoint(x: (start.x + end.x) / 2, y: (start.y + end.y) / 2)
         let cp  = CGPoint(
             x: mid.x + CGFloat.random(in: -200...200),
@@ -244,32 +245,37 @@ class Jiggler: ObservableObject {
 
         let distance     = hypot(end.x - start.x, end.y - start.y)
         let totalSteps   = max(30, Int(distance / 6))
-        let stepInterval = Double.random(in: 0.010...0.018)   // slightly faster than before
+        let stepInterval = Double.random(in: 0.010...0.018)
 
-        var step = 0
+        // Use recursive DispatchQueue scheduling instead of Timer to avoid
+        // capturing a non-Sendable Timer across the concurrency boundary.
         humanMoveTimer?.invalidate()
-        humanMoveTimer = Timer.scheduledTimer(withTimeInterval: stepInterval, repeats: true) { [weak self] t in
-            Task { @MainActor [weak self] in
-                guard let self, self.isActive, !self.humanPaused else { t.invalidate(); return }
+        humanMoveTimer = nil
+        animateStep(step: 0, total: totalSteps, interval: stepInterval,
+                    start: start, end: end, cp: cp)
+    }
 
-                let rawT  = Double(step) / Double(totalSteps)
-                let eased = CGFloat(Self.easeInOut(rawT))
-                let t1    = 1.0 - eased
+    private func animateStep(step: Int, total: Int, interval: Double,
+                             start: CGPoint, end: CGPoint, cp: CGPoint) {
+        guard isActive, !humanPaused else { return }
 
-                let x = t1*t1*start.x + 2*t1*eased*cp.x + eased*eased*end.x
-                let y = t1*t1*start.y + 2*t1*eased*cp.y + eased*eased*end.y
+        let rawT  = Double(step) / Double(total)
+        let eased = CGFloat(Self.easeInOut(rawT))
+        let t1    = 1.0 - eased
 
-                self.postMove(to: CGPoint(x: x, y: y))
+        let x = t1*t1*start.x + 2*t1*eased*cp.x + eased*eased*end.x
+        let y = t1*t1*start.y + 2*t1*eased*cp.y + eased*eased*end.y
+        postMove(to: CGPoint(x: x, y: y))
 
-                step += 1
-                if step > totalSteps {
-                    t.invalidate()
-                    self.humanMoveTimer = nil
-                    // Short pause then move again — no fixed interval rule
-                    let pause = Double.random(in: 0.4...3.0)
-                    self.scheduleHumanMove(delay: pause)
-                }
-            }
+        if step >= total {
+            let pause = Double.random(in: 0.4...3.0)
+            scheduleHumanMove(delay: pause)
+            return
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + interval) { [weak self] in
+            self?.animateStep(step: step + 1, total: total, interval: interval,
+                              start: start, end: end, cp: cp)
         }
     }
 
