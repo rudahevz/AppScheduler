@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.0.1
+
+### Fixed
+- NSOpenPanel crash when selecting an app or file — added missing `com.apple.security.files.user-selected.read-write` entitlement
+- SF Symbol `clock.badge.plus` replaced with `clock.arrow.circlepath` for macOS 13 compatibility
+
+
 
 ### v1.0 — Initial Swift App
 

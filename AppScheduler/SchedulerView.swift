@@ -302,7 +302,7 @@ struct SchedulerView: View {
 
     var emptyState: some View {
         VStack(spacing: 10) {
-            Image(systemName: "clock.badge.plus")
+            Image(systemName: "clock.arrow.circlepath")
                 .font(.system(size: 32, weight: .ultraLight))
                 .foregroundColor(Color.white.opacity(0.15))
                 .accessibilityHidden(true)
