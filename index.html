@@ -43,50 +43,72 @@
   .hero-note { margin-top: 20px; font-size: 13px; color: var(--muted); animation: fadeUp 0.6s 0.4s ease both; }
   .mockup-wrap { margin-top: 64px; animation: fadeUp 0.8s 0.5s ease both; position: relative; }
   .mockup-glow { position: absolute; inset: -40px; background: radial-gradient(ellipse at 50% 60%, rgba(112,80,255,0.25) 0%, transparent 70%); pointer-events: none; }
-  .mockup { width: 460px; max-width: 92vw; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 40px 120px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.1); backdrop-filter: blur(20px); position: relative; }
-  .app-sidebar { position: absolute; left: 0; top: 0; bottom: 0; width: 56px; background: rgba(0,0,0,0.3); border-right: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; align-items: center; padding: 16px 0; gap: 8px; }
-  .sidebar-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: rgba(255,255,255,0.3); cursor: default; position: relative; }
-  .sidebar-icon.active { background: rgba(200,240,96,0.12); color: var(--accent); }
+  .mockup { width: 460px; max-width: 92vw; background: linear-gradient(160deg, rgba(60,45,120,0.55) 0%, rgba(20,15,50,0.9) 60%, rgba(60,20,30,0.4) 100%); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 40px 120px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.1); backdrop-filter: blur(20px); position: relative; min-height: 520px; }
+  /* Sidebar — matches real app */
+  .app-sidebar { position: absolute; left: 0; top: 0; bottom: 0; width: 68px; background: rgba(0,0,0,0.25); border-right: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; align-items: center; padding: 14px 0 14px; gap: 4px; }
+  .sidebar-logo { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, rgba(200,240,96,0.2), rgba(200,240,96,0.06)); border: 1px solid rgba(200,240,96,0.25); display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 6px; }
+  .sidebar-divider { width: 32px; height: 1px; background: rgba(255,255,255,0.07); margin: 4px 0; }
+  .sidebar-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.28); cursor: pointer; position: relative; transition: all 0.2s; }
+  .sidebar-icon.active { background: rgba(200,240,96,0.12); color: var(--accent); border: 1px solid rgba(200,240,96,0.2); }
   .sidebar-icon.active::before { content: ''; position: absolute; left: -1px; top: 50%; transform: translateY(-50%); width: 3px; height: 20px; background: var(--accent); border-radius: 0 2px 2px 0; }
-  .sidebar-icon.amber-active { background: rgba(245,158,11,0.15); color: var(--amber); }
-  .sidebar-icon.amber-active::before { content: ''; position: absolute; left: -1px; top: 50%; transform: translateY(-50%); width: 3px; height: 20px; background: var(--amber); border-radius: 0 2px 2px 0; }
-  .sidebar-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; margin-top: auto; margin-bottom: 8px; box-shadow: 0 0 8px var(--accent); animation: pulse 2s ease infinite; }
-  .app-content { margin-left: 56px; padding: 16px; min-height: 460px; }
-  .mock-tabs { display: flex; gap: 4px; margin-bottom: 14px; }
-  .mock-tab { font-size: 11px; font-family: 'DM Mono', monospace; padding: 5px 12px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.08); color: var(--muted); cursor: default; }
-  .mock-tab.active { background: rgba(200,240,96,0.1); border-color: rgba(200,240,96,0.25); color: var(--accent); }
-  .mock-tab.amber.active { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.25); color: var(--amber); }
-  .countdown-banner { background: rgba(200,240,96,0.06); border: 1px solid rgba(200,240,96,0.15); border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-  .countdown-label { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
-  .countdown-time { font-size: 18px; color: var(--accent); font-family: 'DM Mono', monospace; font-weight: 500; letter-spacing: 2px; }
-  .countdown-next { font-size: 11px; color: rgba(200,240,96,0.6); text-align: right; }
-  .entry-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-  .entry-card.highlighted { background: rgba(200,240,96,0.05); border-color: rgba(200,240,96,0.2); }
-  .entry-app-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .sidebar-icon.jigg-active { background: rgba(200,240,96,0.12); color: var(--accent); border: 1px solid rgba(200,240,96,0.2); }
+  .sidebar-icon.jigg-active::before { content: ''; position: absolute; left: -1px; top: 50%; transform: translateY(-50%); width: 3px; height: 20px; background: var(--accent); border-radius: 0 2px 2px 0; }
+  .sidebar-status { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .sidebar-dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 7px var(--accent); animation: pulse 2s ease infinite; }
+  .sidebar-status span { font-size: 8px; font-family: 'DM Mono', monospace; color: var(--accent); font-weight: 500; }
+  /* Content area */
+  .app-content { margin-left: 68px; padding: 0; min-height: 460px; padding-bottom: 52px; }
+  /* Panel header */
+  .panel-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 14px 16px 10px; }
+  .panel-title { font-size: 16px; font-weight: 600; color: white; }
+  .panel-sub { font-size: 10px; font-family: 'DM Mono', monospace; color: rgba(255,255,255,0.35); margin-top: 2px; }
+  .jigg-sub { color: rgba(200,240,96,0.5); }
+  .add-btn { width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; font-size: 16px; color: rgba(255,255,255,0.6); cursor: default; }
+  /* Countdown banner — matches real screenshot */
+  .countdown-banner { margin: 0 12px 12px; background: rgba(200,240,96,0.06); border: 1px solid rgba(200,240,96,0.15); border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+  .countdown-label { font-size: 9px; font-family: 'DM Mono', monospace; color: rgba(255,255,255,0.3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+  .countdown-next-name { font-size: 12px; color: rgba(255,255,255,0.6); }
+  .countdown-time { font-size: 22px; color: var(--accent); font-family: 'DM Mono', monospace; font-weight: 300; letter-spacing: 2px; }
+  /* Entry cards — matches real screenshot */
+  .entry-card { margin: 0 12px 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
+  .entry-app-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+  .slack-icon { background: #fff; }
+  .spotify-icon { background: #191414; }
   .entry-info { flex: 1; min-width: 0; }
-  .entry-name { font-size: 13px; font-weight: 500; color: var(--text); }
-  .entry-times { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
-  .time-badge { font-size: 10px; font-family: 'DM Mono', monospace; padding: 2px 7px; border-radius: 100px; }
-  .time-badge.open  { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.25); }
-  .time-badge.close { background: rgba(255,100,120,0.15); color: #ff6478; border: 1px solid rgba(255,100,120,0.25); }
-  .entry-pause { width: 28px; height: 28px; border-radius: 7px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--muted); flex-shrink: 0; }
+  .entry-name { font-size: 14px; font-weight: 500; color: white; margin-bottom: 5px; }
+  .entry-times { display: flex; gap: 6px; }
+  .time-badge { font-size: 10px; font-family: 'DM Mono', monospace; padding: 3px 8px; border-radius: 100px; display: inline-flex; align-items: center; gap: 3px; }
+  .time-badge.open  { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+  .time-badge.close { background: rgba(255,100,120,0.12); color: #ff6478; border: 1px solid rgba(255,100,120,0.2); }
+  .entry-actions { display: flex; align-items: center; gap: 6px; }
+  .entry-pause { width: 30px; height: 30px; border-radius: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.09); display: flex; align-items: center; justify-content: center; font-size: 10px; color: rgba(255,255,255,0.35); }
+  .entry-chevron { font-size: 18px; color: rgba(255,255,255,0.18); line-height: 1; }
+  /* Panels */
   .jiggler-panel { display: none; }
   .jiggler-panel.visible { display: block; }
   .scheduler-panel.hidden { display: none; }
-  .jiggler-status-banner { border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 14px; background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); }
-  .jiggler-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: var(--amber); box-shadow: 0 0 8px var(--amber); animation: pulse 1.5s ease infinite; }
-  .jiggler-status-text { font-size: 13px; font-weight: 500; color: var(--amber); }
-  .jiggler-status-sub { font-size: 11px; color: rgba(245,158,11,0.6); font-family: 'DM Mono', monospace; }
-  .mode-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
-  .mode-card { border-radius: 12px; padding: 14px 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); }
-  .mode-card.selected { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.3); }
-  .mode-card-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-  .mode-card.selected .mode-card-title { color: var(--amber); }
-  .mode-card-desc { font-size: 10px; color: var(--muted); line-height: 1.4; }
-  .jiggler-btn { width: 100%; padding: 11px; border-radius: 10px; font-size: 13px; font-weight: 600; text-align: center; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: var(--amber); cursor: default; }
-  .app-bottombar { position: absolute; bottom: 0; left: 56px; right: 0; padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; }
-  .status-text { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
-  .pause-btn { display: flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 100px; padding: 6px 12px; }
+  /* Jiggler mode section */
+  .mode-label { font-size: 9px; font-family: 'DM Mono', monospace; letter-spacing: 2px; color: rgba(255,255,255,0.25); padding: 4px 16px 10px; text-transform: uppercase; }
+  .mode-cards-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 12px; }
+  .mode-card-real { border-radius: 14px; padding: 16px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); cursor: pointer; transition: all 0.2s; }
+  .mode-card-real.selected { background: rgba(200,240,96,0.06); border-color: rgba(200,240,96,0.25); }
+  .mode-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .mode-icon { color: rgba(255,255,255,0.35); }
+  .mode-card-real.selected .mode-icon { color: var(--accent); }
+  .mode-selected-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: pulse 2s ease infinite; }
+  .mode-selected-dot.hidden { display: none; }
+  .mode-card-title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.5); margin-bottom: 4px; }
+  .mode-card-real.selected .mode-card-title { color: white; }
+  .mode-card-desc { font-size: 10px; color: rgba(255,255,255,0.25); line-height: 1.4; font-family: 'DM Mono', monospace; }
+  .mode-card-real.selected .mode-card-desc { color: rgba(255,255,255,0.45); }
+  /* Bottom bar */
+  .app-bottombar { position: absolute; bottom: 0; left: 68px; right: 0; padding: 11px 16px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.15); }
+  .bottombar-left { display: flex; align-items: center; gap: 6px; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.2); }
+  .status-dot.active { background: var(--accent); box-shadow: 0 0 5px var(--accent); }
+  .status-text { font-size: 11px; color: rgba(255,255,255,0.3); font-family: 'DM Mono', monospace; }
+  .pause-btn { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 100px; padding: 7px 14px; cursor: default; }
+  .pause-btn.start-btn { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); }
   #countdown-display { animation: countTick 1s ease infinite; }
   @keyframes countTick { 0%, 49% { opacity: 1; } 50%, 99% { opacity: 0.7; } }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
@@ -206,17 +228,17 @@
     <div class="nav-icon">⏰</div>
     <span class="nav-name">App Scheduler</span>
   </a>
-  <a class="nav-cta" href="https://github.com/rudahevz/AppScheduler/releases/download/v3.0.0/AppScheduler.dmg">↓ Download Free</a>
+  <a class="nav-cta" href="https://github.com/rudahevz/AppScheduler/releases/download/v3.0.1/AppScheduler.dmg">↓ Download Free</a>
 </nav>
 
 <section class="hero">
-  <div class="hero-badge">v3.0.0 · macOS 13+ · Free · Open Source</div>
+  <div class="hero-badge">v3.0.1 · macOS 13+ · Free · Open Source</div>
   <h1>Your Mac,<br><em>on your schedule</em></h1>
   <p class="hero-sub">
     Automatically open and close any app at set times — and keep your Mac awake and the screen from locking with the built-in Mouse Jiggler.
   </p>
   <div class="hero-actions">
-    <a class="btn-primary" href="https://github.com/rudahevz/AppScheduler/releases/download/v3.0.0/AppScheduler.dmg">↓ Download for macOS</a>
+    <a class="btn-primary" href="https://github.com/rudahevz/AppScheduler/releases/download/v3.0.1/AppScheduler.dmg">↓ Download for macOS</a>
     <a class="btn-secondary" href="https://github.com/rudahevz/AppScheduler">View on GitHub →</a>
   </div>
   <p class="hero-note">Free · No account needed · No tracking · macOS Ventura or later</p>
@@ -224,76 +246,113 @@
   <div class="mockup-wrap">
     <div class="mockup-glow"></div>
     <div class="mockup">
+      <!-- Sidebar matches real app: clock logo + schedules + jiggler + settings -->
       <div class="app-sidebar">
-        <div class="sidebar-icon active" id="sb-sched">⏱</div>
-        <div class="sidebar-icon" id="sb-jigg" style="font-size:14px;">🖱</div>
-        <div class="sidebar-icon">⚙</div>
-        <div class="sidebar-dot"></div>
-      </div>
-      <div class="app-content">
-        <div class="mock-tabs">
-          <div class="mock-tab active" id="tab-sched" onclick="showTab('sched')">Schedules</div>
-          <div class="mock-tab amber" id="tab-jigg" onclick="showTab('jigg')">Jiggler</div>
+        <div class="sidebar-logo">⏰</div>
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-icon" id="sb-sched" onclick="showTab('sched')">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="4" rx="1.5" fill="currentColor" opacity="0.9"/><rect x="1" y="7" width="14" height="4" rx="1.5" fill="currentColor" opacity="0.9"/><rect x="1" y="13" width="8" height="2" rx="1" fill="currentColor" opacity="0.5"/></svg>
         </div>
+        <div class="sidebar-icon" id="sb-jigg" onclick="showTab('jigg')">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5 3 L5 13 L8 10 L10 14 L12 13 L10 9 L14 9 Z" fill="currentColor" opacity="0.9"/></svg>
+        </div>
+        <div class="sidebar-icon" id="sb-settings">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div class="sidebar-status" id="sb-status">
+          <div class="sidebar-dot"></div>
+          <span>On</span>
+        </div>
+      </div>
 
+      <div class="app-content">
+        <!-- SCHEDULES PANEL -->
         <div class="scheduler-panel" id="panel-sched">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Schedules</div>
+              <div class="panel-sub" id="active-count">2 active</div>
+            </div>
+            <div class="add-btn">+</div>
+          </div>
           <div class="countdown-banner">
             <div>
               <div class="countdown-label">NEXT EVENT</div>
-              <div class="countdown-time" id="countdown-display">02:14:38</div>
+              <div class="countdown-next-name">Close Spotify</div>
             </div>
-            <div class="countdown-next">Close Slack<br>at 6:00 PM</div>
+            <div class="countdown-time" id="countdown-display">08:13:27</div>
           </div>
-          <div class="entry-card highlighted">
-            <div class="entry-app-icon">💬</div>
+          <div class="entry-card">
+            <div class="entry-app-icon slack-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z" fill="#E01E5A"/></svg>
+            </div>
             <div class="entry-info">
               <div class="entry-name">Slack</div>
-              <div class="entry-times"><span class="time-badge open">↑ 9:00 AM</span><span class="time-badge close">↓ 6:00 PM</span></div>
+              <div class="entry-times">
+                <span class="time-badge open">● 08:00</span>
+                <span class="time-badge close">● 05:00</span>
+              </div>
             </div>
-            <div class="entry-pause">⏸</div>
+            <div class="entry-actions">
+              <div class="entry-pause">⏸</div>
+              <div class="entry-chevron">›</div>
+            </div>
           </div>
           <div class="entry-card">
-            <div class="entry-app-icon">🎵</div>
+            <div class="entry-app-icon spotify-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" fill="#1DB954"/></svg>
+            </div>
             <div class="entry-info">
               <div class="entry-name">Spotify</div>
-              <div class="entry-times"><span class="time-badge open">↑ 8:00 AM</span><span class="time-badge close">↓ 11:00 PM</span></div>
+              <div class="entry-times">
+                <span class="time-badge open">● 09:00</span>
+                <span class="time-badge close">● 04:00</span>
+              </div>
             </div>
-            <div class="entry-pause">⏸</div>
-          </div>
-          <div class="entry-card">
-            <div class="entry-app-icon">📊</div>
-            <div class="entry-info">
-              <div class="entry-name">Daily Report.xlsx</div>
-              <div class="entry-times"><span class="time-badge open">↑ 8:30 AM</span></div>
+            <div class="entry-actions">
+              <div class="entry-pause">⏸</div>
+              <div class="entry-chevron">›</div>
             </div>
-            <div class="entry-pause">⏸</div>
           </div>
         </div>
 
+        <!-- JIGGLER PANEL -->
         <div class="jiggler-panel" id="panel-jigg">
-          <div class="jiggler-status-banner">
-            <div class="jiggler-dot"></div>
+          <div class="panel-header">
             <div>
-              <div class="jiggler-status-text">Jiggling…</div>
-              <div class="jiggler-status-sub">Human mode · screen lock prevented</div>
+              <div class="panel-title">Jiggler</div>
+              <div class="panel-sub jigg-sub" id="jigg-status-sub">inactive</div>
             </div>
           </div>
-          <div class="mode-cards">
-            <div class="mode-card">
+          <div class="mode-label">MODE</div>
+          <div class="mode-cards-row">
+            <div class="mode-card-real selected" id="mode-subtle" onclick="selectMode('subtle')">
+              <div class="mode-card-header">
+                <svg class="mode-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <div class="mode-selected-dot" id="subtle-dot"></div>
+              </div>
               <div class="mode-card-title">Subtle</div>
-              <div class="mode-card-desc">1px nudge every 15s. Invisible.</div>
+              <div class="mode-card-desc">1px nudge every 15s via HID</div>
             </div>
-            <div class="mode-card selected">
+            <div class="mode-card-real" id="mode-human" onclick="selectMode('human')">
+              <div class="mode-card-header">
+                <svg class="mode-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="2" fill="currentColor"/><path d="M12 8v5l-3 4M12 13l3 4M9 11H6M15 11h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div class="mode-selected-dot hidden" id="human-dot"></div>
+              </div>
               <div class="mode-card-title">Human</div>
-              <div class="mode-card-desc">Natural arcs. Yields to you.</div>
+              <div class="mode-card-desc">Free movement, pauses for you</div>
             </div>
           </div>
-          <div class="jiggler-btn">⏹ Stop Jiggler</div>
         </div>
       </div>
+
+      <!-- Bottom bar -->
       <div class="app-bottombar">
-        <span class="status-text" id="mockup-status">3 active · running</span>
-        <div class="pause-btn">⏸ Pause All</div>
+        <div class="bottombar-left">
+          <div class="status-dot" id="status-dot"></div>
+          <span class="status-text" id="mockup-status">Waiting...</span>
+        </div>
+        <div class="pause-btn" id="action-btn">⏸ Pause All</div>
       </div>
     </div>
   </div>
@@ -429,7 +488,7 @@
     <div class="spec-item"><div class="spec-label">Platform</div><div class="spec-value">macOS 13.0 Ventura+</div></div>
     <div class="spec-item"><div class="spec-label">Architecture</div><div class="spec-value">Apple Silicon + Intel</div></div>
     <div class="spec-item"><div class="spec-label">Bundle size</div><div class="spec-value">~2 MB</div></div>
-    <div class="spec-item"><div class="spec-label">Version</div><div class="spec-value">3.0.0</div></div>
+    <div class="spec-item"><div class="spec-label">Version</div><div class="spec-value">3.0.1</div></div>
     <div class="spec-item"><div class="spec-label">Requires</div><div class="spec-value">macOS 13.0+</div></div>
     <div class="spec-item"><div class="spec-label">Price</div><div class="spec-value">Free · Open source</div></div>
   </div>
@@ -452,7 +511,7 @@
   <h2>Stop opening apps.<br><em>Start getting time back.</em></h2>
   <p>Free. No account. No tracking. Just download and run.</p>
   <div class="cta-actions">
-    <a class="btn-primary" href="https://github.com/rudahevz/AppScheduler/releases/download/v3.0.0/AppScheduler.dmg">↓ Download App Scheduler</a>
+    <a class="btn-primary" href="https://github.com/rudahevz/AppScheduler/releases/download/v3.0.1/AppScheduler.dmg">↓ Download App Scheduler</a>
     <a class="btn-secondary" href="https://github.com/rudahevz/AppScheduler">★ Star on GitHub</a>
   </div>
   <p class="price-tag">Free forever · macOS 13+ · ~2 MB · No tracking</p>
@@ -464,7 +523,7 @@
     <span style="margin-left:16px;">© 2025 Ruda Kirsch</span>
   </div>
   <div class="footer-links">
-    <a href="https://github.com/rudahevz/AppScheduler/releases/download/v3.0.0/AppScheduler.dmg">Download</a>
+    <a href="https://github.com/rudahevz/AppScheduler/releases/download/v3.0.1/AppScheduler.dmg">Download</a>
     <a href="https://github.com/rudahevz/AppScheduler">GitHub</a>
     <a href="https://github.com/rudahevz/AppScheduler/blob/main/CHANGELOG.md">Changelog</a>
   </div>
@@ -475,12 +534,23 @@
     const isJ = t === 'jigg';
     document.getElementById('panel-sched').className = isJ ? 'scheduler-panel hidden' : 'scheduler-panel';
     document.getElementById('panel-jigg').className  = isJ ? 'jiggler-panel visible' : 'jiggler-panel';
-    document.getElementById('tab-sched').className   = isJ ? 'mock-tab' : 'mock-tab active';
-    document.getElementById('tab-jigg').className    = isJ ? 'mock-tab amber active' : 'mock-tab amber';
     document.getElementById('sb-sched').className    = isJ ? 'sidebar-icon' : 'sidebar-icon active';
-    document.getElementById('sb-jigg').className     = isJ ? 'sidebar-icon amber-active' : 'sidebar-icon';
-    document.getElementById('mockup-status').textContent = isJ ? 'jiggling · human mode' : '3 active · running';
+    document.getElementById('sb-jigg').className     = isJ ? 'sidebar-icon jigg-active' : 'sidebar-icon';
+    // Bottom bar
+    document.getElementById('mockup-status').textContent = isJ ? 'Stopped' : 'Waiting...';
+    document.getElementById('action-btn').textContent    = isJ ? '▶ Start' : '⏸ Pause All';
+    document.getElementById('action-btn').className      = isJ ? 'pause-btn start-btn' : 'pause-btn';
+    document.getElementById('status-dot').className      = isJ ? 'status-dot' : 'status-dot';
   }
+
+  function selectMode(m) {
+    const isSubtle = m === 'subtle';
+    document.getElementById('mode-subtle').className = isSubtle ? 'mode-card-real selected' : 'mode-card-real';
+    document.getElementById('mode-human').className  = isSubtle ? 'mode-card-real' : 'mode-card-real selected';
+    document.getElementById('subtle-dot').className  = isSubtle ? 'mode-selected-dot' : 'mode-selected-dot hidden';
+    document.getElementById('human-dot').className   = isSubtle ? 'mode-selected-dot hidden' : 'mode-selected-dot';
+  }
+
   let jiggOn = false;
   setInterval(() => { jiggOn = !jiggOn; showTab(jiggOn ? 'jigg' : 'sched'); }, 4000);
 
