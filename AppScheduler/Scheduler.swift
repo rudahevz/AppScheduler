@@ -236,15 +236,30 @@ class Scheduler: ObservableObject {
 
     private func closeTarget(_ entry: ScheduleEntry) {
         let name = entry.targetName
-        let apps = NSWorkspace.shared.runningApplications.filter {
-            $0.localizedName?.lowercased() == name.lowercased()
+
+        // Match by bundle URL (exact path) — much more reliable than localizedName
+        // which can differ from the filename for some apps (e.g. localized names,
+        // or apps where the .app name differs from the display name).
+        // Falls back to localizedName comparison if the path doesn't match anything,
+        // so it still works for edge cases like apps launched from different paths.
+        let targetURL = URL(fileURLWithPath: entry.targetPath).standardizedFileURL
+        var apps = NSWorkspace.shared.runningApplications.filter {
+            guard let bundleURL = $0.bundleURL else { return false }
+            return bundleURL.standardizedFileURL == targetURL
         }
+        if apps.isEmpty {
+            // Fallback: match by name (handles edge cases)
+            apps = NSWorkspace.shared.runningApplications.filter {
+                $0.localizedName?.lowercased() == name.lowercased()
+            }
+        }
+
         apps.forEach { $0.terminate() }
         lastAction = apps.isEmpty
             ? "\(name) wasn't running at \(timeString(Date()))"
             : "Closed \(name) at \(timeString(Date()))"
         if !apps.isEmpty {
-            sendNotification(title: "Closed \(name)", body: "Scheduled close at \(timeString(Date()))")  // FIX #5
+            sendNotification(title: "Closed \(name)", body: "Scheduled close at \(timeString(Date()))")
         }
     }
 
