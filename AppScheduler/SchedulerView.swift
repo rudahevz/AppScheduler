@@ -302,7 +302,7 @@ struct SchedulerView: View {
 
     var emptyState: some View {
         VStack(spacing: 10) {
-            Image(systemName: "clock.arrow.circlepath")
+            Image(systemName: "clock.badge.plus")
                 .font(.system(size: 32, weight: .ultraLight))
                 .foregroundColor(Color.white.opacity(0.15))
                 .accessibilityHidden(true)
@@ -499,7 +499,7 @@ struct ShortcutsNavigationView: View {
 
             Spacer()
 
-            Text("App Scheduler · v3.0")
+            Text("App Scheduler · v3.0.2")
                 .font(.system(size: 9, design: .monospaced))
                 .foregroundColor(Color.white.opacity(0.15))
                 .padding(.bottom, 14)

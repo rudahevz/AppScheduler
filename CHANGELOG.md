@@ -1,10 +1,14 @@
 # Changelog
 
-## v3.0.1
+## v3.0.2
 
 ### Fixed
-- NSOpenPanel crash when selecting an app or file — added missing `com.apple.security.files.user-selected.read-write` entitlement
-- SF Symbol `clock.badge.plus` replaced with `clock.arrow.circlepath` for macOS 13 compatibility
+- Apps not closing at scheduled time — now matches running apps by bundle URL instead of display name
+- Network sandbox error blocking update checker — added `network.client` entitlement
+- `ProgressView` constraint warning in Settings
+
+### Added
+- Check for Updates in Settings tab — silent check on launch, manual check button
 
 
 
