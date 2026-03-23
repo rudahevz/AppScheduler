@@ -1116,7 +1116,7 @@ struct EntrySheet: View {
 
     func pickFile() {
         NSApp.activate(ignoringOtherApps: true)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             let panel = NSOpenPanel()
             panel.title = "Choose an App or File"
             panel.allowsMultipleSelection = false
