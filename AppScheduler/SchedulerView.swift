@@ -302,7 +302,7 @@ struct SchedulerView: View {
 
     var emptyState: some View {
         VStack(spacing: 10) {
-            Image(systemName: "clock.badge.plus")
+            Image(systemName: "clock.arrow.circlepath")
                 .font(.system(size: 32, weight: .ultraLight))
                 .foregroundColor(Color.white.opacity(0.15))
                 .accessibilityHidden(true)
@@ -1115,22 +1115,38 @@ struct EntrySheet: View {
     }
 
     func pickFile() {
-        let panel = NSOpenPanel()
-        panel.title = "Choose an App or File"
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
-        panel.allowedContentTypes = [.application, .spreadsheet, .pdf, .item]
-        panel.directoryURL = URL(fileURLWithPath: "/Applications")
-        panel.level = .floating
         NSApp.activate(ignoringOtherApps: true)
-        if let screen = NSScreen.main {
-            let sf = screen.visibleFrame
-            let ps = panel.frame.size
-            panel.setFrameOrigin(NSPoint(x: sf.minX + 20, y: sf.maxY - ps.height + 20))
-        }
-        if panel.runModal() == .OK, let url = panel.url {
-            entry.targetPath = url.path
-            entry.targetName = url.deletingPathExtension().lastPathComponent
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+            let panel = NSOpenPanel()
+            panel.title = "Choose an App or File"
+            panel.allowsMultipleSelection = false
+            panel.canChooseDirectories = false
+            panel.allowedContentTypes = [.application, .spreadsheet, .pdf, .item]
+            panel.directoryURL = URL(fileURLWithPath: "/Applications")
+
+            // Float above everything including the popover
+            panel.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.floatingWindow)) + 1)
+
+            // Position the panel to the left of the popover so it doesn't overlap
+            if let screen = NSScreen.main,
+               let popoverWindow = NSApp.keyWindow ?? NSApp.windows.first(where: { $0.isVisible }) {
+                let pf = popoverWindow.frame
+                let ps = panel.frame.size
+                let sf = screen.visibleFrame
+
+                // Try left of popover first; fall back to right if not enough space
+                let xLeft = pf.minX - ps.width - 58
+                let xRight = pf.maxX + 58
+                let x = xLeft >= sf.minX ? xLeft : xRight
+                let y = min(pf.maxY, sf.maxY - ps.height)
+                panel.setFrameOrigin(NSPoint(x: x, y: y))
+            }
+
+            panel.makeKeyAndOrderFront(nil)
+            if panel.runModal() == .OK, let url = panel.url {
+                self.entry.targetPath = url.path
+                self.entry.targetName = url.deletingPathExtension().lastPathComponent
+            }
         }
     }
 }
@@ -1405,10 +1421,12 @@ struct JigglerView: View {
 // MARK: - Helpers
 
 func defaultTime() -> Date {
-    let now = Date()
+    // Default to 1 minute from now so the user doesn't accidentally
+    // trigger an event that's already in the past.
+    let oneMinuteFromNow = Date().addingTimeInterval(60)
     let cal = Calendar.current
-    let c = cal.dateComponents([.hour, .minute], from: now)
-    return cal.date(bySettingHour: c.hour ?? 9, minute: c.minute ?? 0, second: 0, of: now) ?? now
+    let c = cal.dateComponents([.hour, .minute], from: oneMinuteFromNow)
+    return cal.date(bySettingHour: c.hour ?? 9, minute: c.minute ?? 0, second: 0, of: oneMinuteFromNow) ?? oneMinuteFromNow
 }
 
 extension Color {
