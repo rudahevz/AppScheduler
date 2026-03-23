@@ -14,8 +14,8 @@
 		A005 /* SchedulerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B005 /* SchedulerView.swift */; };
 		A006 /* Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = B006 /* Shortcuts.swift */; };
 		A007 /* LaunchAtLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B007 /* LaunchAtLogin.swift */; };
-		A011 /* Jiggler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B011 /* Jiggler.swift */; };
 		A008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B008 /* Assets.xcassets */; };
+		A011 /* Jiggler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B011 /* Jiggler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,10 +26,10 @@
 		B005 /* SchedulerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchedulerView.swift; sourceTree = "<group>"; };
 		B006 /* Shortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shortcuts.swift; sourceTree = "<group>"; };
 		B007 /* LaunchAtLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLogin.swift; sourceTree = "<group>"; };
-		B011 /* Jiggler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Jiggler.swift; sourceTree = "<group>"; };
 		B008 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B009 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B010 /* AppScheduler.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppScheduler.entitlements; sourceTree = "<group>"; };
+		B011 /* Jiggler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Jiggler.swift; sourceTree = "<group>"; };
 		PROD /* App Scheduler.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "App Scheduler.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -271,6 +271,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				AUTOMATION_APPLE_EVENTS = YES;
+				CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES;
 				CODE_SIGN_ENTITLEMENTS = AppScheduler/AppScheduler.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -296,6 +297,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				AUTOMATION_APPLE_EVENTS = YES;
+				CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES;
 				CODE_SIGN_ENTITLEMENTS = AppScheduler/AppScheduler.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Manual;

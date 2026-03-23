@@ -17,6 +17,7 @@ class Scheduler: ObservableObject {
 
     private var eventTimer: Timer?       // fires once at next scheduled event
     private var countdownTimer: Timer?   // fires every second to update the HH:MM:SS display
+    private var backupTimer: Timer?      // fires every 30s as a safety net for missed events
     private var startedAt: Date = Date()
     private var dailyState: [UUID: (opened: Bool, closed: Bool)] = [:]
     private var lastDate: DateComponents?
@@ -29,6 +30,7 @@ class Scheduler: ObservableObject {
             startedAt = Date()
             scheduleNextEvent()
             scheduleCountdownTimer()
+            scheduleBackupTimer()
         }
     }
 
@@ -49,6 +51,7 @@ class Scheduler: ObservableObject {
         saveConfig()
         scheduleNextEvent()
         scheduleCountdownTimer()
+        scheduleBackupTimer()
         notifyStateChange(running: true)
         lastAction = "Scheduler started at \(timeString(Date()))"
     }
@@ -56,8 +59,9 @@ class Scheduler: ObservableObject {
     func stop() {
         isRunning = false
         config.isRunning = false
-        eventTimer?.invalidate();    eventTimer = nil
-        countdownTimer?.invalidate(); countdownTimer = nil
+        eventTimer?.invalidate();     eventTimer = nil
+        countdownTimer?.invalidate();  countdownTimer = nil
+        backupTimer?.invalidate();     backupTimer = nil
         nextEventCountdown = "--:--:--"
         nextEventLabel = ""
         saveConfig()
@@ -83,19 +87,71 @@ class Scheduler: ObservableObject {
         }
 
         let delay = next.date.timeIntervalSinceNow
-        guard delay > 0 else {
-            recomputeCountdown()
+
+        // If the event is already due (or just missed by a small margin), fire it
+        // immediately rather than silently dropping it. This handles the case where
+        // saveConfig() is called at the exact moment a timer was about to fire,
+        // cancelling and rescheduling it with delay ≤ 0.
+        if delay <= 0 {
+            fireEvents(at: next.date)
+            scheduleNextEvent()
             return
         }
 
         eventTimer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { [weak self] _ in
-            Task { @MainActor [weak self] in
+            DispatchQueue.main.async { [weak self] in
                 self?.fireEvents(at: next.date)
-                self?.scheduleNextEvent()   // immediately schedule the one after
+                self?.scheduleNextEvent()
             }
         }
 
         recomputeCountdown()
+    }
+
+    private func scheduleBackupTimer() {
+        backupTimer?.invalidate()
+        backupTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+            DispatchQueue.main.async { [weak self] in
+                self?.checkMissedEvents()
+            }
+        }
+    }
+
+    private func checkMissedEvents() {
+        guard isRunning else { return }
+        let now = Date()
+        let cal = Calendar.current
+        let h = cal.component(.hour,   from: now)
+        let m = cal.component(.minute, from: now)
+        let today = cal.dateComponents([.year, .month, .day], from: now)
+
+        if lastDate != nil && today != lastDate { dailyState = [:] }
+
+        for entry in config.entries where !entry.isPaused {
+            var state = dailyState[entry.id] ?? (opened: false, closed: false)
+            var changed = false
+
+            if let t = entry.openTime, !state.opened {
+                let eh = cal.component(.hour, from: t)
+                let em = cal.component(.minute, from: t)
+                // Fire if we are within the same minute and it hasn't fired yet
+                if eh == h && em == m {
+                    openTarget(entry)
+                    state.opened = true
+                    changed = true
+                }
+            }
+            if let t = entry.closeTime, !state.closed {
+                let eh = cal.component(.hour, from: t)
+                let em = cal.component(.minute, from: t)
+                if eh == h && em == m {
+                    closeTarget(entry)
+                    state.closed = true
+                    changed = true
+                }
+            }
+            if changed { dailyState[entry.id] = state }
+        }
     }
 
     /// Finds the soonest upcoming open or close time across all active entries.
@@ -236,24 +292,9 @@ class Scheduler: ObservableObject {
 
     private func closeTarget(_ entry: ScheduleEntry) {
         let name = entry.targetName
-
-        // Match by bundle URL (exact path) — much more reliable than localizedName
-        // which can differ from the filename for some apps (e.g. localized names,
-        // or apps where the .app name differs from the display name).
-        // Falls back to localizedName comparison if the path doesn't match anything,
-        // so it still works for edge cases like apps launched from different paths.
-        let targetURL = URL(fileURLWithPath: entry.targetPath).standardizedFileURL
-        var apps = NSWorkspace.shared.runningApplications.filter {
-            guard let bundleURL = $0.bundleURL else { return false }
-            return bundleURL.standardizedFileURL == targetURL
+        let apps = NSWorkspace.shared.runningApplications.filter {
+            $0.localizedName?.lowercased() == name.lowercased()
         }
-        if apps.isEmpty {
-            // Fallback: match by name (handles edge cases)
-            apps = NSWorkspace.shared.runningApplications.filter {
-                $0.localizedName?.lowercased() == name.lowercased()
-            }
-        }
-
         apps.forEach { $0.terminate() }
         lastAction = apps.isEmpty
             ? "\(name) wasn't running at \(timeString(Date()))"
