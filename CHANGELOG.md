@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.0.5
+
+### Fixed
+- Apps not closing in release builds — CI was shipping an app-sandboxed binary because Xcode's archive step embedded `com.apple.security.app-sandbox` via `ENABLE_APP_SANDBOX=YES`. Added explicit re-sign step (matching v2.0.0 workflow) to enforce exact entitlements from the entitlements file
+
+---
+
 ## v3.0.4
 
 ### Fixed
