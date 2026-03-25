@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.0.4
+
+### Fixed
+- Apps not closing in release builds — removed `automation.apple-events` entitlement which caused macOS to gate `terminate()` behind TCC Automation permission
+
+---
+
 ## v3.0.3
 
 ### Added
