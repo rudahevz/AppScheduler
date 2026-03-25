@@ -87,11 +87,30 @@ jobs:
           OTHER_CODE_SIGN_FLAGS="--timestamp --options=runtime" \
           | xcpretty --color || true
 
-    # ── 5. Extract .app directly from archive (avoids exportArchive segfault) ──
-    - name: Extract app from archive
+    # ── 5. Extract .app and re-sign with explicit entitlements ────────────────
+    # Re-signing is required to ensure the final binary has exactly the
+    # entitlements in AppScheduler.entitlements — overriding anything Xcode
+    # may have added during archive (e.g. app-sandbox from ENABLE_APP_SANDBOX).
+    - name: Extract and re-sign app
       run: |
         mkdir -p "$EXPORT_PATH"
         cp -R "$ARCHIVE_PATH/Products/Applications/$APP_NAME.app" "$EXPORT_PATH/"
+
+        APP_PATH="$EXPORT_PATH/$APP_NAME.app"
+
+        IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_NAME" \
+          | grep "Developer ID Application" | head -1 \
+          | sed 's/.*"\(.*\)"/\1/')
+        echo "Signing with: $IDENTITY"
+
+        codesign --force --deep --sign "$IDENTITY" \
+          --entitlements "AppScheduler/AppScheduler.entitlements" \
+          --options runtime \
+          --timestamp \
+          "$APP_PATH"
+
+        codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+        echo "✅ App signed successfully"
 
     # ── 6. Notarize .app ─────────────────────────────────────────────────────
     - name: Notarize app
