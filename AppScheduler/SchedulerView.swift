@@ -461,19 +461,6 @@ struct ShortcutsNavigationView: View {
 
                 settingRowDivider()
 
-                settingRow(icon: "lock.shield.fill", iconColor: "#ff9f0a",
-                           title: "Accessibility Permission",
-                           subtitle: "Required to close apps on schedule") {
-                    Button("Grant") {
-                        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Color(hex: "#ff9f0a"))
-                    .controlSize(.small)
-                }
-
-                settingRowDivider()
-
                 // ── Keyboard Shortcuts nav row ─────────────────────────────────
                 Button {
                     withAnimation(.easeInOut(duration: 0.22)) { showShortcuts = true }
