@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.0.3
+
+### Added
+- Accessibility Permission grant button in Settings — one tap opens Privacy & Security → Accessibility
+
+---
+
 ## v3.0.2
 
 ### Fixed
